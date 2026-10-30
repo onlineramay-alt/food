@@ -52,6 +52,14 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 #toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;opacity:0;transition:.25s;pointer-events:none;z-index:9;font-size:14px}#toast.on{opacity:1}
 .banner{background:#fff3cd;color:#5c4400;padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
+@media (min-width:768px){
+  body{padding-bottom:24px}
+  header{padding:8px 24px}
+  nav{position:static;border:0;background:none;order:9;gap:4px}
+  nav button{flex:none;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:99px;font-size:14px;color:var(--ink)}
+  nav button b{display:inline;font-size:17px}
+  nav button.on{background:var(--acc);color:var(--acc-ink)}
+}
 table.t{width:100%;border-collapse:collapse;font-size:13px}table.t td{padding:4px 0;border-top:1px solid var(--line)}table.t td:last-child{text-align:right;font-weight:600}
 </style>
 </head>
@@ -64,9 +72,9 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}table.t td{padding:4p
     <button class="btn ghost sm" data-act="day" data-d="1">›</button>
   </div>
   <select id="me" style="width:auto" title="Who is using this phone?"></select>
+  <nav id="nav"></nav>
 </header>
 <main id="main"></main>
-<nav id="nav"></nav>
 <dialog id="dlg"></dialog>
 <div id="toast"></div>
 
