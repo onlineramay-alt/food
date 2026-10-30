@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#2f7d4f">
+<title>Food for the Family</title>
+<style>
+:root{--bg:#fbfdfa;--card:#fff;--ink:#2b3a31;--mute:#7d8b82;--line:#eef2ec;--acc:#8fd0a8;--acc-ink:#17402a;--g:#8fd0a8;--a:#f7d98a;--r:#f4a39b;--track:#f1f5ef;--tgt:#5d6d63}
+@media (prefers-color-scheme:dark){:root{--bg:#121714;--card:#1b231e;--ink:#e8eee9;--mute:#9aa8a0;--line:#2a352e;--acc:#4cb877;--acc-ink:#0b1710;--g:#4cb877;--a:#e8b63f;--r:#ef6a60;--track:#2a352e;--tgt:#e8eee9}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:76px}
+h1,h2,h3{margin:0}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{font-size:17px;flex:1;min-width:150px}
+select,input,button{font:inherit;color:inherit}
+select,input[type=text],input[type=number],input[type=date],input[type=search]{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+label{display:block;font-size:12px;color:var(--mute);margin:10px 0 3px}
+main{max-width:860px;margin:0 auto;padding:14px 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:8px}.sp{flex:1}
+.mute{color:var(--mute)}.small{font-size:12px}
+.btn{background:var(--acc);color:var(--acc-ink);border:0;border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.danger{background:var(--r);color:#4a1712}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px}
+.chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 12px 5px 5px;cursor:pointer;white-space:nowrap}
+.chip.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.av{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;color:#2b3a31;font-weight:700;font-size:13px;flex:none}
+.av.lg{width:40px;height:40px;font-size:17px}
+.bar{height:9px;background:var(--track);border-radius:9px;overflow:hidden;position:relative}
+.bar>i{display:block;height:100%;border-radius:9px;background:var(--g)}
+.bar.a>i{background:var(--a)}.bar.r>i{background:var(--r)}
+.bar .mk{position:absolute;top:0;bottom:0;width:2px;background:var(--tgt);opacity:.55}
+.nut{margin:9px 0}.nut .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+.tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;color:#2b3a31;background:var(--g)}.tag.a{background:var(--a)}.tag.r{background:var(--r)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.seg button{flex:1;border:0;background:var(--card);padding:8px 2px;cursor:pointer;font-size:13px}.seg button.on{background:var(--acc);color:var(--acc-ink);font-weight:600}
+.item{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.item:first-child{border-top:0}
+.step{display:flex;align-items:center;gap:2px}.step button{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.step span{min-width:30px;text-align:center;font-weight:600}
+.verdict{border-left:4px solid var(--g);padding:6px 12px;background:var(--bg);border-radius:6px;margin-bottom:8px}.verdict.a{border-color:var(--a)}.verdict.r{border-color:var(--r)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.grid .card{margin:0}
+.cv{height:170px;position:relative}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;z-index:6}
+nav button{flex:1;border:0;background:none;padding:9px 0 11px;cursor:pointer;color:var(--mute);font-size:12px}nav button b{display:block;font-size:19px;font-weight:400}nav button.on{color:var(--acc);font-weight:700}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);width:min(520px,94vw);padding:16px;max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+#toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;opacity:0;transition:.25s;pointer-events:none;z-index:9;font-size:14px}#toast.on{opacity:1}
+.banner{background:#fff3cd;color:#5c4400;padding:8px 14px;border-radius:8px;margin-bottom:12px;font-size:13px}
+table.t{width:100%;border-collapse:collapse;font-size:13px}table.t td{padding:4px 0;border-top:1px solid var(--line)}table.t td:last-child{text-align:right;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1>🍲 Food for the Family</h1>
+  <div id="daynav" class="row" style="gap:4px">
+    <button class="btn ghost sm" data-act="day" data-d="-1">‹</button>
+    <input type="date" id="daypick" style="width:auto;padding:5px 8px">
+    <button class="btn ghost sm" data-act="day" data-d="1">›</button>
+  </div>
+  <select id="me" style="width:auto" title="Who is using this phone?"></select>
+</header>
+<main id="main"></main>
+<nav id="nav"></nav>
+<dialog id="dlg"></dialog>
+<div id="toast"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const ymd=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*6e4);return z.toISOString().slice(0,10)};
+const parseDay=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=parseDay(s);d.setDate(d.getDate()+n);return ymd(d)};
+const fmtDay=s=>parseDay(s).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+const r1=n=>Math.round(n*10)/10;
+const num=n=>Math.round(n)>=100?Math.round(n):r1(n);
+const autoMeal=()=>{const h=new Date().getHours();return h<11?'Breakfast':h<15?'Lunch':h<18?'Snack':'Dinner'};
+const MEALS=['Breakfast','Lunch','Snack','Dinner'];
+const COLORS=['#8fd0a8','#f5b78c','#9cc3f2','#d9b3ec','#8fd6dc','#f2cf85','#f2a7b8','#c3dd8c'];
+
+/* ---------- nutrients ---------- */
+const NUT=[
+ {k:'kcal',n:'Calories',u:'kcal',t:'energy'},
+ {k:'protein',n:'Protein',u:'g'},
+ {k:'carbs',n:'Carbs',u:'g',t:'range'},
+ {k:'fibre',n:'Fibre',u:'g'},
+ {k:'fat',n:'Fat',u:'g',t:'range'},
+ {k:'calcium',n:'Calcium',u:'mg'},
+ {k:'iron',n:'Iron',u:'mg'},
+ {k:'vita',n:'Vitamin A',u:'µg'},
+ {k:'vitc',n:'Vitamin C',u:'mg'},
+ {k:'b12',n:'Vitamin B12',u:'µg'},
+ {k:'folate',n:'Folate',u:'µg'}];
+const NK=NUT.map(n=>n.k);
+
+/* name, serving, kcal, protein, carbs, fibre, fat, calcium, iron, vitA, vitC, B12, folate (per serving) */
+const SEED=[
+['Roti / chapati (1 medium)','1 roti',120,3.5,22,3,2.5,12,1.2,0,0,0,12],
+['Phulka (1 small)','1 phulka',85,2.6,16,2.2,1,9,0.9,0,0,0,9],
+['Paratha, plain','1 paratha',200,4,28,3,8,15,1.5,25,0,0,15],
+['Aloo paratha','1 paratha',260,5,38,3.5,10,20,1.8,20,6,0,20],
+['Methi thepla','1 thepla',110,3,15,2,4,40,1.4,60,3,0,25],
+['Steamed rice','1 cup (150 g)',195,4,43,0.6,0.4,10,0.5,0,0,0,5],
+['Brown rice','1 cup (150 g)',215,5,45,3.5,1.8,20,0.8,0,0,0,10],
+['Jeera rice','1 cup',230,4,44,0.8,4,10,0.6,10,0,0,5],
+['Curd rice','1 bowl',220,6,38,1,5,100,0.6,20,1,0.3,10],
+['Khichdi (dal-rice)','1 bowl',230,8,38,3.5,5,35,2,40,3,0,80],
+['Veg pulao','1 plate',260,5,42,3,8,30,1.5,150,5,0,30],
+['Chicken biryani','1 plate',480,24,55,2.5,18,40,2.5,60,4,0.6,20],
+['Dal tadka (toor)','1 katori',150,8,20,5,4,40,2.5,30,3,0,120],
+['Moong dal','1 katori',120,8,18,4,2,30,2,20,2,0,140],
+['Masoor dal','1 katori',130,8,20,4,2,25,2.2,15,2,0,120],
+['Rajma curry','1 katori',200,10,30,8,3,70,3,10,3,0,120],
+['Chole (chickpea curry)','1 katori',230,10,30,8,7,80,4,20,4,0,140],
+['Sambar','1 katori',110,5,15,4,3,50,2,100,8,0,60],
+['Kadhi','1 katori',130,4,12,1,7,90,0.6,40,2,0.3,10],
+['Idli','2 idlis',130,4,26,1.5,0.5,20,1,0,0,0,20],
+['Dosa, plain','1 dosa',135,3.5,22,1,3.5,15,1,0,0,0,10],
+['Masala dosa','1 dosa',250,5,38,3,8,25,1.5,15,6,0,25],
+['Upma','1 bowl',200,5,30,3,7,25,1.5,40,3,0,20],
+['Poha','1 bowl',220,4,38,2.5,6,20,5,30,5,0,25],
+['Besan chilla','1 chilla',150,7,17,3.5,6,30,2,20,3,0,90],
+['Moong dal chilla','1 chilla',130,8,16,3.5,3.5,30,1.8,20,2,0,100],
+['Oats porridge with milk','1 bowl',200,8,30,4,5,150,1.5,40,1,0.5,20],
+['Cornflakes with milk','1 bowl',220,7,40,1.5,3,200,5,100,5,0.8,60],
+['Bread, brown','2 slices',140,5,26,4,2,60,1.6,0,0,0,25],
+['Butter toast','2 slices',200,4,24,2,10,40,1.2,60,0,0,15],
+['Veg sandwich','1 sandwich',220,6,34,3,7,60,1.5,50,6,0,30],
+['Egg, boiled','1 egg',75,6.5,0.5,0,5,28,0.9,80,0,0.5,22],
+['Omelette','2 eggs',190,13,1,0.3,14,60,2,170,0,1,45],
+['Egg curry','1 katori (2 eggs)',280,15,8,2,20,80,2.5,200,5,1,50],
+['Chicken curry','1 katori',250,22,6,1.5,15,25,1.5,40,5,0.5,15],
+['Chicken, grilled / tandoori','100 g',165,31,0,0,3.6,15,1,20,0,0.3,5],
+['Mutton curry','1 katori',300,22,6,1.5,21,30,2.5,20,3,1.5,15],
+['Fish curry','1 katori',200,20,5,1,11,40,1.2,30,4,2,15],
+['Fish fry','1 piece',220,22,6,0.5,12,45,1.2,30,0,2,12],
+['Paneer bhurji','1 katori',280,15,6,1,21,300,1,150,5,0.8,20],
+['Paneer butter masala','1 katori',340,14,12,2,27,290,1.5,200,6,0.8,20],
+['Palak paneer','1 katori',260,13,9,3,19,320,3,600,15,0.8,90],
+['Soya chunks curry','1 katori',200,20,12,5,8,150,5,20,3,0,100],
+['Aloo gobi','1 katori',140,3,18,4,6,30,1.2,30,25,0,40],
+['Bhindi sabzi','1 katori',100,2.5,9,4,6,70,0.8,40,12,0,50],
+['Mixed veg sabzi','1 katori',120,3,14,4.5,5,40,1.2,300,15,0,45],
+['Lauki / dudhi sabzi','1 katori',80,2,8,2.5,4,25,0.7,10,8,0,20],
+['Palak / methi sabzi','1 katori',90,4,7,3.5,5,120,2.5,500,15,0,90],
+['Sprouts salad','1 bowl',130,9,20,6,1.5,55,2.5,20,15,0,150],
+['Cucumber-tomato salad','1 bowl',30,1,6,1.5,0.3,20,0.5,70,15,0,20],
+['Dahi (curd)','1 katori (100 g)',60,3.5,4.5,0,3,120,0.1,30,1,0.4,7],
+['Raita','1 katori',70,3,6,0.5,3.5,110,0.2,30,3,0.4,8],
+['Chaas (buttermilk)','1 glass',40,2,3,0,1.5,80,0,10,0,0.3,5],
+['Milk','1 glass (200 ml)',130,6.5,9.5,0,7,240,0.1,100,1,0.9,10],
+['Tea with milk & sugar','1 cup',70,2,10,0,2.5,70,0.1,25,0,0.3,3],
+['Coffee with milk & sugar','1 cup',80,2.5,11,0,3,80,0.1,25,0,0.3,3],
+['Ghee','1 tsp',45,0,0,0,5,0,0,40,0,0,0],
+['Banana','1 medium',105,1.3,27,3,0.4,6,0.3,4,10,0,24],
+['Apple','1 medium',95,0.5,25,4.4,0.3,11,0.2,5,8,0,5],
+['Orange / mosambi','1 medium',62,1.2,15,3,0.2,52,0.1,14,70,0,39],
+['Mango','1 cup',100,1,25,2.6,0.6,18,0.3,90,60,0,70],
+['Papaya','1 cup',62,0.7,16,2.5,0.4,30,0.2,90,88,0,53],
+['Guava','1 medium',68,2.6,14,5.4,1,18,0.3,31,125,0,49],
+['Grapes','1 cup',100,1,26,1.4,0.2,15,0.5,5,16,0,4],
+['Dates','2 dates',56,0.4,15,1.6,0,13,0.2,0,0,0,3],
+['Almonds','5 nuts',35,1.3,1.2,0.8,3,19,0.2,0,0,0,2],
+['Peanuts','1 handful (30 g)',170,7.5,5,2.5,14,27,0.7,0,0,0,70],
+['Roasted chana','1 handful (30 g)',110,6,18,5,2,50,1.5,0,0,0,100],
+['Coconut water','1 glass',45,1.7,9,2.6,0.5,58,0.3,0,6,0,3],
+['Biscuits (Marie / digestive)','2 biscuits',90,1.2,14,0.4,3.5,5,0.4,0,0,0,2],
+['Samosa','1 piece',260,4,28,2.5,15,20,1.5,20,3,0,20],
+['Pasta / macaroni with veg','1 plate',280,9,45,3,7,40,2,80,6,0,50],
+['Instant noodles','1 pack',360,8,50,2,14,40,2.4,0,0,0,10],
+['Pav bhaji','1 plate',400,9,55,6,16,90,3,200,25,0,60],
+['Gulab jamun','1 piece',150,2,22,0.1,6,40,0.2,20,0,0.1,3],
+['Kheer','1 katori',200,5,32,0.3,6,150,0.3,40,1,0.4,5],
+['Ice cream','1 scoop',140,2.5,17,0.3,7,80,0.1,50,0,0.2,3]
+];
+
+/* ---------- storage layer: Supabase REST, or this-browser demo mode ---------- */
+const CFG=window.FFL_CONFIG||{};
+const REMOTE=!!(CFG.url&&CFG.key);
+const SB=REMOTE?supabase.createClient(CFG.url,CFG.key):null;
+const db={
+  async req(method,path,body){
+    const {data:{session}}=await SB.auth.getSession();
+    const h={apikey:CFG.key,Authorization:'Bearer '+(session?.access_token||CFG.key),'Content-Type':'application/json',Prefer:'return=representation'};
+    const r=await fetch(CFG.url.replace(/\/$/,'')+'/rest/v1/'+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
+    if(!r.ok) throw new Error(method+' '+path.split('?')[0]+' failed: '+(await r.text()).slice(0,200));
+    return method==='DELETE'?null:r.json();
+  },
+  loc(t){try{return JSON.parse(ls.get('ffl_'+t)||'[]')}catch(e){return[]}},
+  save(t,a){ls.set('ffl_'+t,JSON.stringify(a))},
+  async list(t,since){
+    if(REMOTE) return this.req('GET',t+'?select=*&limit=20000'+(since?'&day=gte.'+since:'')+(t==='ffl_logs'?'':'&order=created_at'));
+    const a=this.loc(t);return since?a.filter(x=>x.day>=since):a;
+  },
+  async insert(t,rows){
+    if(REMOTE) return this.req('POST',t,rows);
+    const a=this.loc(t);const out=rows.map(r=>({id:crypto.randomUUID(),created_at:new Date().toISOString(),...r}));
+    this.save(t,a.concat(out));return out;
+  },
+  async update(t,id,patch){
+    if(REMOTE) return (await this.req('PATCH',t+'?id=eq.'+id,patch))[0];
+    const a=this.loc(t);const i=a.findIndex(x=>x.id===id);a[i]={...a[i],...patch};this.save(t,a);return a[i];
+  },
+  async remove(t,id){
+    if(REMOTE) return this.req('DELETE',t+'?id=eq.'+id);
+    this.save(t,this.loc(t).filter(x=>x.id!==id));
+  }
+};
+
+/* ---------- state ---------- */
+const S={members:[],foods:[],logs:[],cur:ls.get('ffl_cur'),me:ls.get('ffl_me')||'',tab:ls.get('ffl_tab')||'today',
+  day:ymd(new Date()),meal:autoMeal(),q:'',range:14,loaded:false};
+const SINCE_DAYS=120;
+let charts=[];
+
+async function load(){
+  const since=addDays(ymd(new Date()),-SINCE_DAYS);
+  const [m,f,l]=await Promise.all([db.list('ffl_members'),db.list('ffl_foods'),db.list('ffl_logs',since)]);
+  S.members=m;S.logs=l;S.foods=f;
+  const em=S.members.find(x=>S.email&&(x.email||'').toLowerCase()===S.email.toLowerCase());
+  if(em&&!ls.get('ffl_me')){S.me=S.cur=em.id;ls.set('ffl_me',em.id);ls.set('ffl_cur',em.id)}
+  if(!f.length){
+    S.foods=await db.insert('ffl_foods',SEED.map(r=>Object.fromEntries([['name',r[0]],['serving',r[1]],...NK.map((k,i)=>[k,r[i+2]])])));
+  }
+  S.foods.sort((a,b)=>a.name.localeCompare(b.name));
+  if(!S.members.find(x=>x.id===S.cur)) S.cur=S.members[0]?.id||null;
+  if(!S.members.find(x=>x.id===S.me)) S.me=S.cur||'';
+  S.loaded=true;
+}
+
+/* ---------- targets ---------- */
+function ageYears(dob,on){const b=new Date(dob),n=on?parseDay(on):new Date();let a=n.getFullYear()-b.getFullYear();
+  if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a}
+function targets(m){
+  const age=Math.max(ageYears(m.dob),3),male=m.sex==='M',w=+m.weight_kg,h=+m.height_cm,obj=m.objective,kid=age<19;
+  const bmr=age<10?(male?22.7*w+495:22.5*w+499):10*w+6.25*h-5*age+(male?5:-161);
+  const af={sedentary:1.2,light:1.375,moderate:1.55,active:1.725}[m.activity]||1.375;
+  let kcal=bmr*af;
+  if(kid) kcal*=obj==='lose'?0.92:obj==='gain'?1.12:1.08; else kcal+=obj==='lose'?-500:obj==='gain'?300:0;
+  kcal=Math.max(kcal,1200);
+  const pk=age<4?1.2:kid?(obj==='gain'?1.2:1.0):({lose:1.2,gain:1.6}[obj]||1.0);
+  const protein=Math.min(pk*w,kcal*0.30/4);
+  const fat=kcal*(kid?0.30:0.27)/9;
+  const carbs=(kcal-protein*4-fat*9)/4;
+  const calcium=age<4?500:age<10?550:age<19?850:1000;
+  const iron=age<4?8:age<7?13:age<10?16:age<13?(male?16:28):age<16?(male?22:30):age<19?(male?26:30):(male?19:29);
+  const vita=age<7?510:age<10?630:age<13?770:age<16?930:age<19?(male?1000:890):(male?1000:840);
+  const vitc=age<10?40:age<19?70:(male?80:65);
+  const b12=age<4?1.2:age<10?2.0:2.2;
+  const folate=age<4?120:age<7?135:age<10?170:age<13?220:age<16?285:300;
+  return {kcal:Math.round(kcal/10)*10,protein:Math.round(protein),carbs:Math.round(carbs),fibre:Math.round(14*kcal/1000),fat:Math.round(fat),
+    calcium,iron,vita,vitc,b12,folate,bmr:Math.round(bmr),age};
+}
+function status(n,p){
+  if(n.t==='energy') return p<.85?{c:'a',l:'Low'}:p<=1.1?{c:'g',l:'On track'}:p<=1.25?{c:'a',l:'A bit high'}:{c:'r',l:'High'};
+  if(n.t==='range') return p>=.8&&p<=1.15?{c:'g',l:'On track'}:{c:'a',l:p<.8?'Low':'High'};
+  return p>=.95?{c:'g',l:'Met'}:p>=.7?{c:'a',l:'Almost'}:{c:'r',l:'Low'};
+}
+
+/* ---------- data helpers ---------- */
+const member=id=>S.members.find(m=>m.id===id);
+const food=id=>S.foods.find(f=>f.id===id);
+const mcolor=m=>COLORS[S.members.indexOf(m)%COLORS.length];
+const logsFor=(mid,day)=>S.logs.filter(l=>l.member_id===mid&&l.day===day);
+function totals(mid,day){
+  const t=Object.fromEntries(NK.map(k=>[k,0]));
+  for(const l of logsFor(mid,day)){const f=food(l.food_id);if(!f)continue;for(const k of NK)t[k]+=(+f[k]||0)*(+l.servings)}
+  return t;
+}
+function avatar(m,cls=''){return `<span class="av ${cls}" style="background:${mcolor(m)}">${esc(m.name.trim()[0]||'?').toUpperCase()}</span>`}
+function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1600)}
+const meName=()=>member(S.me)?.name||'';
+
+/* ---------- views ---------- */
+function chips(){
+  return `<div class="chips">${S.members.map(m=>`<div class="chip ${m.id===S.cur?'on':''}" data-act="member" data-id="${m.id}">${avatar(m)}${esc(m.name)}</div>`).join('')}</div>`;
+}
+function emptyState(){
+  return `<div class="card"><h3>Welcome 👋</h3><p>Start by adding the four family members — name, date of birth, height and weight. The app then works out each person's daily protein, fibre, vitamins and minerals.</p><button class="btn" data-act="newMember">Add first member</button>
+  <p class="small mute" style="margin-top:14px">Or start with a name:</p><div class="row" style="flex-wrap:wrap">${[['Vasudev','M','maintain'],['Alamelu','F','maintain'],['Lakshmanan','M','growth'],['Meenakshi','F','growth']].map(x=>`<button class="btn ghost sm" data-act="newMember" data-n="${x[0]}" data-s="${x[1]}" data-o="${x[2]}">${x[0]}</button>`).join('')}</div></div>`;
+}
+function nutBars(m,tot,t){
+  return NUT.map(n=>{
+    const p=t[n.k]?tot[n.k]/t[n.k]:0,s=status(n,p);
+    return `<div class="nut"><div class="top"><span>${n.n}</span><span><b>${num(tot[n.k])}</b> / ${t[n.k]} ${n.u} <span class="tag ${s.c==='g'?'':s.c}">${s.l}</span></span></div>
+    <div class="bar ${s.c==='g'?'':s.c}"><i style="width:${Math.min(p,1.4)/1.4*100}%"></i><span class="mk" style="left:${100/1.4}%"></span></div></div>`;
+  }).join('');
+}
+function suggest(k,t){
+  const n=NUT.find(x=>x.k===k);
+  return S.foods.filter(f=>+f[k]>0&&+f.kcal<=450).map(f=>({f,s:(+f[k]/t[k])/((+f.kcal+60)/200)})).sort((a,b)=>b.s-a.s).slice(0,3).map(x=>x.f.name.split(' (')[0]);
+}
+function verdict(m,tot,t){
+  const rows=NUT.map(n=>({n,p:tot[n.k]/t[n.k]}));
+  const any=Object.values(tot).some(v=>v>0);
+  if(!any) return `<div class="verdict a">Nothing logged yet for this day.</div>`;
+  const low=rows.filter(r=>!r.n.t&&r.p<.7).sort((a,b)=>a.p-b.p);
+  const kc=rows[0].p;
+  let msg=[],cls='';
+  if(kc>1.25){msg.push('Calories are well over target.');cls='r'}
+  else if(kc>1.1){msg.push('Calories are slightly over target.');cls='a'}
+  if(low.length){
+    cls=cls||'a';
+    msg.push(`Low so far: <b>${low.slice(0,4).map(r=>r.n.n.toLowerCase()).join(', ')}</b>.`);
+    const s=suggest(low[0].n.k,t);if(s.length) msg.push(`For ${low[0].n.n.toLowerCase()}, try ${s.join(', ')}.`);
+  }
+  if(!msg.length) msg.push('Looking good — on track for every nutrient so far. 🎉');
+  return `<div class="verdict ${cls}">${msg.join(' ')}</div>`;
+}
+
+function viewToday(){
+  const m=member(S.cur);if(!m) return emptyState();
+  return `${chips()}
+  <div class="card" id="sum"></div>
+  <div class="card"><h3 style="margin-bottom:8px">Add food for ${esc(m.name)}</h3>
+    <div class="seg">${MEALS.map(x=>`<button class="${x===S.meal?'on':''}" data-act="meal" data-m="${x}">${x}</button>`).join('')}</div>
+    <input type="search" id="q" placeholder="Search your foods — dal, roti, egg…" value="${esc(S.q)}" autocomplete="off">
+    <div id="results"></div></div>
+  <div class="card" id="entries"></div>`;
+}
+function refreshToday(){
+  const m=member(S.cur);if(!m||!$('#sum'))return;
+  const t=targets(m),tot=totals(m.id,S.day);
+  const isToday=S.day===ymd(new Date());
+  $('#sum').innerHTML=`<div class="row" style="margin-bottom:6px">${avatar(m,'lg')}<div class="sp"><h3>${esc(m.name)} · ${isToday?'Today':fmtDay(S.day)}</h3>
+    <div class="small mute">${t.age} yrs · ${m.height_cm} cm · ${m.weight_kg} kg · goal: ${{growth:'healthy growth',lose:'weight loss',maintain:'maintain weight',gain:'muscle gain'}[m.objective]}</div></div></div>
+    ${verdict(m,tot,t)}${nutBars(m,tot,t)}`;
+  const ls_=logsFor(m.id,S.day);
+  $('#entries').innerHTML=MEALS.map(meal=>{
+    const rows=ls_.filter(l=>l.meal===meal);if(!rows.length)return'';
+    const kc=rows.reduce((s,l)=>s+(+food(l.food_id)?.kcal||0)*l.servings,0);
+    return `<div class="small mute" style="margin-top:6px"><b>${meal}</b> · ${Math.round(kc)} kcal</div>`+rows.map(l=>{
+      const f=food(l.food_id);if(!f)return'';
+      return `<div class="item"><div class="sp"><div>${esc(f.name)}</div><div class="small mute">${esc(f.serving)}${l.logged_by&&l.logged_by!==m.name?' · added by '+esc(l.logged_by):''}</div></div>
+      <div class="step"><button data-act="step" data-id="${l.id}" data-d="-0.5">−</button><span>${l.servings}</span><button data-act="step" data-id="${l.id}" data-d="0.5">+</button></div>
+      <button class="btn ghost sm" data-act="del" data-id="${l.id}" aria-label="Remove">✕</button></div>`}).join('');
+  }).join('')||'<div class="mute">Nothing logged yet — search and tap a food above.</div>';
+  renderResults();
+}
+function renderResults(){
+  const el=$('#results');if(!el)return;
+  const q=S.q.trim().toLowerCase();let list,title;
+  if(q){list=S.foods.filter(f=>f.name.toLowerCase().includes(q)).slice(0,15);title='Results'}
+  else{
+    const c={};S.logs.filter(l=>l.member_id===S.cur).forEach(l=>c[l.food_id]=(c[l.food_id]||0)+1);
+    list=Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,8).map(food).filter(Boolean);title='Frequent';
+    if(!list.length){list=S.foods.slice(0,8);title='Common foods'}
+  }
+  el.innerHTML=`<div class="small mute" style="margin:10px 0 2px">${title}</div>`+(list.map(f=>`<div class="item"><div class="sp"><div>${esc(f.name)}</div><div class="small mute">${esc(f.serving)} · ${num(f.kcal)} kcal · ${r1(f.protein)} g protein</div></div><button class="btn sm" data-act="add" data-id="${f.id}">+ Add</button></div>`).join('')||'<div class="mute">No match. Add it in the Foods tab.</div>');
+}
+
+function viewFamily(){
+  if(!S.members.length) return emptyState();
+  return `<div class="grid">${S.members.map(m=>{
+    const t=targets(m),tot=totals(m.id,S.day);
+    const ok=NUT.filter(n=>status(n,tot[n.k]/t[n.k]).c==='g').length;
+    const ate=logsFor(m.id,S.day).map(l=>food(l.food_id)?.name.split(' (')[0]).filter(Boolean);
+    const mini=['kcal','protein','fibre','calcium','iron'].map(k=>{const n=NUT.find(x=>x.k===k),p=tot[k]/t[k],s=status(n,p);
+      return `<div class="nut"><div class="top"><span>${n.n}</span><span>${num(tot[k])}/${t[k]} ${n.u}</span></div><div class="bar ${s.c==='g'?'':s.c}"><i style="width:${Math.min(p,1)*100}%"></i></div></div>`}).join('');
+    return `<div class="card" data-act="go" data-id="${m.id}" style="cursor:pointer"><div class="row">${avatar(m,'lg')}<div class="sp"><h3>${esc(m.name)}</h3><div class="small mute">${t.age} yrs</div></div><span class="tag ${ok>=8?'':ok>=5?'a':'r'}">${ok}/${NUT.length} on track</span></div>
+    ${mini}<div class="small mute" style="margin-top:6px">${ate.length?esc([...new Set(ate)].slice(0,8).join(', ')):'Nothing logged'}</div></div>`}).join('')}</div>`;
+}
+
+function viewTrends(){
+  const m=member(S.cur);if(!m) return emptyState();
+  return `${chips()}<div class="seg">${[7,14,30].map(n=>`<button class="${S.range===n?'on':''}" data-act="range" data-n="${n}">${n} days</button>`).join('')}</div>
+  <div class="grid">${NUT.map(n=>`<div class="card"><div class="row"><b class="sp">${n.n} <span class="mute small">(${n.u})</span></b><span class="small mute" id="avg_${n.k}"></span></div><div class="cv"><canvas id="c_${n.k}"></canvas></div></div>`).join('')}</div>`;
+}
+function drawCharts(){
+  charts.forEach(c=>c.destroy());charts=[];
+  const m=member(S.cur);if(!m||typeof Chart==='undefined')return;
+  const t=targets(m),cs=getComputedStyle(document.documentElement),css=v=>cs.getPropertyValue(v).trim();
+  const days=[];for(let i=S.range-1;i>=0;i--)days.push(addDays(ymd(new Date()),-i));
+  const per=days.map(d=>logsFor(m.id,d).length?totals(m.id,d):null);
+  for(const n of NUT){
+    const vals=per.map(p=>p?r1(p[n.k]):null);
+    const cols=per.map(p=>p?css('--'+status(n,p[n.k]/t[n.k]).c):'transparent');
+    const logged=per.filter(Boolean);
+    if(logged.length) $('#avg_'+n.k).textContent='avg '+Math.round(logged.reduce((s,p)=>s+p[n.k],0)/logged.length/t[n.k]*100)+'% of target';
+    else $('#avg_'+n.k).textContent='no data';
+    charts.push(new Chart($('#c_'+n.k),{data:{labels:days.map(fmtDay),datasets:[
+      {type:'bar',data:vals,backgroundColor:cols,borderRadius:3,order:2},
+      {type:'line',data:days.map(()=>t[n.k]),borderColor:css('--tgt'),borderDash:[5,4],borderWidth:2,pointRadius:0,order:1}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex?'Target '+t[n.k]:c.parsed.y+' '+n.u}}},
+        scales:{x:{grid:{display:false},ticks:{color:css('--mute'),maxTicksLimit:6,font:{size:10}}},y:{beginAtZero:true,grid:{color:css('--line')},ticks:{color:css('--mute'),font:{size:10}}}}}}));
+  }
+}
+
+function viewFoods(){
+  return `<div class="row" style="margin-bottom:10px"><input type="search" id="fq" placeholder="Search foods" value="${esc(S.fq||'')}" class="sp"><button class="btn" data-act="newFood">+ New</button></div>
+  <div class="card" id="foodlist"></div><div class="small mute">Values are per serving and approximate (typical Indian home recipes). Edit any food to match your own recipe.</div>`;
+}
+function renderFoodList(){
+  const q=(S.fq||'').toLowerCase();
+  $('#foodlist').innerHTML=S.foods.filter(f=>f.name.toLowerCase().includes(q)).map(f=>`<div class="item" data-act="editFood" data-id="${f.id}" style="cursor:pointer"><div class="sp"><div>${esc(f.name)}</div><div class="small mute">${esc(f.serving)}</div></div><div class="small mute" style="text-align:right">${num(f.kcal)} kcal<br>${r1(f.protein)} g prot · ${r1(f.fibre)} g fibre</div></div>`).join('')||'<div class="mute">No foods.</div>';
+}
+
+function viewPeople(){
+  return `<div class="row" style="margin-bottom:10px"><h3 class="sp">Family members</h3><button class="btn" data-act="newMember">+ Add</button></div>
+  ${S.members.map(m=>{const t=targets(m);return `<div class="card"><div class="row">${avatar(m,'lg')}<div class="sp"><h3>${esc(m.name)}</h3><div class="small mute">${t.age} yrs · ${m.height_cm} cm · ${m.weight_kg} kg · BMR ${t.bmr} kcal</div></div><button class="btn ghost sm" data-act="editMember" data-id="${m.id}">Edit</button></div>
+  <table class="t" style="margin-top:10px">${NUT.map(n=>`<tr><td>Daily ${n.n.toLowerCase()}</td><td>${t[n.k]} ${n.u}</td></tr>`).join('')}</table></div>`}).join('')||emptyState()}
+  ${REMOTE?`<div class="card"><div class="small mute">Signed in as ${esc(S.email)}</div><button class="btn ghost sm" data-act="signout" style="margin-top:8px">Sign out</button></div>`:''}
+  <div class="small mute">Targets are estimates from age, sex, height, weight, activity and goal (energy via Mifflin-St Jeor / Schofield; vitamins and minerals follow ICMR-NIN style RDAs). They are a guide, not medical advice — for a child's weight concerns or any health condition, check with your doctor or a dietitian.</div>`;
+}
+
+/* ---------- forms ---------- */
+function memberForm(id,pre={}){
+  const m=id?member(id):{email:'',name:pre.n||'',sex:pre.s||'F',dob:'',height_cm:'',weight_kg:'',activity:pre.o==='growth'?'moderate':'light',objective:pre.o||'maintain'};
+  const sel=(name,val,opts)=>`<select name="${name}">${opts.map(([v,l])=>`<option value="${v}" ${v===val?'selected':''}>${l}</option>`).join('')}</select>`;
+  $('#dlg').innerHTML=`<form onsubmit="saveMember(event,'${id||''}')"><h3>${id?'Edit':'Add'} member</h3>
+  <label>Name</label><input type="text" name="name" required value="${esc(m.name)}">
+  <div class="two"><div><label>Sex</label>${sel('sex',m.sex,[['F','Female'],['M','Male']])}</div><div><label>Date of birth</label><input type="date" name="dob" required value="${esc(m.dob)}"></div></div>
+  <div class="two"><div><label>Height (cm)</label><input type="number" name="height" required min="60" max="230" step="0.5" value="${esc(m.height_cm)}"></div><div><label>Weight (kg)</label><input type="number" name="weight" required min="8" max="250" step="0.1" value="${esc(m.weight_kg)}"></div></div>
+  <label>Google email (so this person is recognised on sign-in — optional)</label><input type="email" name="email" value="${esc(m.email||'')}">
+  <label>Activity level</label>${sel('activity',m.activity,[['sedentary','Mostly sitting'],['light','Light (some walking / play)'],['moderate','Moderate (regular exercise / very active child)'],['active','Very active (daily hard exercise)']])}
+  <label>Objective</label>${sel('objective',m.objective,[['growth','Healthy growth (kids)'],['maintain','Maintain weight'],['lose','Weight loss'],['gain','Muscle gain']])}
+  <div class="row" style="margin-top:16px">${id?`<button type="button" class="btn danger sm" onclick="delMember('${id}')">Delete</button>`:''}<span class="sp"></span><button type="button" class="btn ghost" onclick="$('#dlg').close()">Cancel</button><button class="btn">Save</button></div></form>`;
+  $('#dlg').showModal();
+}
+async function saveMember(e,id){
+  e.preventDefault();const f=new FormData(e.target);
+  const row={name:f.get('name').trim(),sex:f.get('sex'),dob:f.get('dob'),height_cm:+f.get('height'),weight_kg:+f.get('weight'),activity:f.get('activity'),objective:f.get('objective'),email:(f.get('email')||'').trim().toLowerCase()||null};
+  try{
+    if(id){const r=await db.update('ffl_members',id,row);S.members=S.members.map(x=>x.id===id?r:x)}
+    else{const [r]=await db.insert('ffl_members',[row]);S.members.push(r);S.cur=r.id;if(!S.me)S.me=r.id;ls.set('ffl_cur',S.cur);ls.set('ffl_me',S.me)}
+    $('#dlg').close();fillMe();render();toast('Saved');
+  }catch(err){fail(err)}
+}
+async function delMember(id){
+  if(!confirm('Delete this person and ALL their food records? This cannot be undone.'))return;
+  try{await db.remove('ffl_members',id);S.members=S.members.filter(x=>x.id!==id);S.logs=S.logs.filter(l=>l.member_id!==id);
+    if(S.cur===id)S.cur=S.members[0]?.id||null;$('#dlg').close();fillMe();render()}catch(err){fail(err)}
+}
+function foodForm(id){
+  const f=id?food(id):{name:'',serving:'',...Object.fromEntries(NK.map(k=>[k,'']))};
+  $('#dlg').innerHTML=`<form onsubmit="saveFood(event,'${id||''}')"><h3>${id?'Edit':'New'} food</h3>
+  <label>Name</label><input type="text" name="name" required value="${esc(f.name)}">
+  <label>One serving is… (e.g. 1 katori, 2 idlis)</label><input type="text" name="serving" required value="${esc(f.serving)}">
+  <div class="small mute" style="margin-top:8px">Nutrients in ONE serving:</div>
+  <div class="three">${NUT.map(n=>`<div><label>${n.n} (${n.u})</label><input type="number" name="${n.k}" step="any" min="0" value="${esc(f[n.k])}" placeholder="0"></div>`).join('')}</div>
+  <div class="row" style="margin-top:16px">${id?`<button type="button" class="btn danger sm" onclick="delFood('${id}')">Delete</button>`:''}<span class="sp"></span><button type="button" class="btn ghost" onclick="$('#dlg').close()">Cancel</button><button class="btn">Save</button></div></form>`;
+  $('#dlg').showModal();
+}
+async function saveFood(e,id){
+  e.preventDefault();const f=new FormData(e.target);
+  const row={name:f.get('name').trim(),serving:f.get('serving').trim(),...Object.fromEntries(NK.map(k=>[k,+f.get(k)||0]))};
+  try{
+    if(id){const r=await db.update('ffl_foods',id,row);S.foods=S.foods.map(x=>x.id===id?r:x)}
+    else{const [r]=await db.insert('ffl_foods',[row]);S.foods.push(r)}
+    S.foods.sort((a,b)=>a.name.localeCompare(b.name));$('#dlg').close();render();toast('Saved');
+  }catch(err){fail(err)}
+}
+async function delFood(id){
+  if(S.logs.some(l=>l.food_id===id)){alert('This food is in someone\'s records, so it can\'t be deleted. Edit it instead.');return}
+  if(!confirm('Delete this food?'))return;
+  try{await db.remove('ffl_foods',id);S.foods=S.foods.filter(x=>x.id!==id);$('#dlg').close();render()}
+  catch(err){alert('Could not delete — it is probably used in older records. Edit it instead.')}
+}
+
+/* ---------- actions ---------- */
+function fail(err){console.error(err);alert('Something went wrong: '+err.message)}
+async function addLog(fid){
+  const ex=S.logs.find(l=>l.member_id===S.cur&&l.day===S.day&&l.meal===S.meal&&l.food_id===fid);
+  try{
+    if(ex){const r=await db.update('ffl_logs',ex.id,{servings:+ex.servings+1});Object.assign(ex,r)}
+    else{const [r]=await db.insert('ffl_logs',[{member_id:S.cur,food_id:fid,day:S.day,meal:S.meal,servings:1,logged_by:meName()}]);S.logs.push(r)}
+    refreshToday();toast('Added to '+S.meal);
+  }catch(err){fail(err)}
+}
+async function stepLog(id,d){
+  const l=S.logs.find(x=>x.id===id);const v=Math.max(0.5,+l.servings+d);
+  try{const r=await db.update('ffl_logs',id,{servings:v});Object.assign(l,r);refreshToday()}catch(err){fail(err)}
+}
+async function delLog(id){try{await db.remove('ffl_logs',id);S.logs=S.logs.filter(l=>l.id!==id);refreshToday()}catch(err){fail(err)}}
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const a=el.dataset.act,id=el.dataset.id;
+  if(a==='tab'){S.tab=el.dataset.t;ls.set('ffl_tab',S.tab);render()}
+  else if(a==='member'){S.cur=id;ls.set('ffl_cur',id);render()}
+  else if(a==='go'){S.cur=id;ls.set('ffl_cur',id);S.tab='today';render()}
+  else if(a==='meal'){S.meal=el.dataset.m;document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.meal))}
+  else if(a==='add')addLog(id);
+  else if(a==='step')stepLog(id,+el.dataset.d);
+  else if(a==='del')delLog(id);
+  else if(a==='day'){const d=addDays(S.day,+el.dataset.d);if(d<=ymd(new Date())){S.day=d;render()}}
+  else if(a==='range'){S.range=+el.dataset.n;render()}
+  else if(a==='signout'){SB.auth.signOut().then(()=>location.reload())}
+  else if(a==='newMember')memberForm(null,el.dataset);
+  else if(a==='editMember')memberForm(id);
+  else if(a==='newFood')foodForm();
+  else if(a==='editFood')foodForm(id);
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='q'){S.q=e.target.value;renderResults()}
+  if(e.target.id==='fq'){S.fq=e.target.value;renderFoodList()}
+});
+$('#daypick').addEventListener('change',e=>{if(e.target.value&&e.target.value<=ymd(new Date())){S.day=e.target.value;render()}});
+$('#me').addEventListener('change',e=>{S.me=e.target.value;ls.set('ffl_me',S.me)});
+
+/* ---------- shell ---------- */
+function fillMe(){
+  $('#me').innerHTML='<option value="">I am…</option>'+S.members.map(m=>`<option value="${m.id}" ${m.id===S.me?'selected':''}>${esc(m.name)}</option>`).join('');
+}
+function render(){
+  if(!S.loaded)return;
+  charts.forEach(c=>c.destroy());charts=[];
+  const tabs=[['today','🍽️','Log'],['family','👨‍👩‍👧‍👦','Family'],['trends','📈','Graphs'],['foods','🥘','Foods'],['people','⚙️','People']];
+  $('#nav').innerHTML=tabs.map(([t,i,l])=>`<button class="${S.tab===t?'on':''}" data-act="tab" data-t="${t}"><b>${i}</b>${l}</button>`).join('');
+  $('#daynav').style.display=(S.tab==='today'||S.tab==='family')?'flex':'none';
+  $('#daypick').value=S.day;$('#daypick').max=ymd(new Date());
+  const banner=REMOTE?'':'<div class="banner">Demo mode: records are saved only on this phone. Connect Supabase (see README) to share with the family.</div>';
+  $('#main').innerHTML=banner+({today:viewToday,family:viewFamily,trends:viewTrends,foods:viewFoods,people:viewPeople}[S.tab])();
+  if(S.tab==='today')refreshToday();
+  if(S.tab==='trends')drawCharts();
+  if(S.tab==='foods')renderFoodList();
+}
+
+async function refresh(){
+  if($('#dlg').open||['q','fq'].includes(document.activeElement?.id))return;
+  try{await load();fillMe();render()}catch(e){console.warn(e)}
+}
+function gate(title,html){
+  $('#nav').innerHTML='';$('#daynav').style.display='none';$('#me').style.display='none';
+  $('#main').innerHTML=`<div class="card" style="max-width:420px;margin:40px auto;text-align:center"><h3>${title}</h3>${html}</div>`;
+}
+async function boot(){
+  if(REMOTE){
+    const {data:{session}}=await SB.auth.getSession();
+    if(!session){
+      gate('Family sign-in','<p class="mute">Only our family\'s Google accounts can open this app.</p><button class="btn" id="gbtn">Sign in with Google</button>');
+      $('#gbtn').onclick=()=>SB.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname,queryParams:{prompt:'select_account'}}});
+      return;
+    }
+    S.email=session.user.email;
+    const ok=await SB.rpc('ffl_is_family');
+    if(ok.error||!ok.data){
+      gate('Not on the family list',`<p class="mute">${esc(S.email)} isn't allowed. Ask the admin to add this email, or sign in with a different Google account.</p><button class="btn ghost" id="sob">Sign out</button>`);
+      $('#sob').onclick=()=>SB.auth.signOut().then(()=>location.reload());
+      return;
+    }
+  }
+  try{await load()}catch(err){$('#main').innerHTML=`<div class="card"><h3>Can't reach the database</h3><p class="mute">${esc(err.message)}</p><p>Check config.js and that setup.sql has been run in Supabase.</p></div>`;return}
+  fillMe();render();
+  if(REMOTE){setInterval(refresh,30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()})}
+}
+boot();
+if(REMOTE)SB.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT')location.reload()});
+</script>
+</body>
+</html>
