@@ -71,6 +71,22 @@ dialog::backdrop{background:rgba(10,30,18,.55)}
 input[type=range]{width:100%;accent-color:var(--acc);height:28px;margin:2px 0}
 .q{font-weight:700}
 .sect{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+.meals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.mt{position:relative;overflow:hidden;border:1.5px solid color-mix(in srgb,var(--m1) 35%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--m1) 10%,var(--card));padding:10px 2px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink);font-weight:700;font-size:13px;line-height:1.15}
+.mt svg{width:30px;height:30px;stroke:var(--m1)}
+.mt small{font-weight:600;font-size:10.5px;color:var(--mute)}
+.mt.on{background:linear-gradient(160deg,var(--m1),var(--m2));border-color:transparent;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25);box-shadow:0 4px 12px color-mix(in srgb,var(--m1) 45%,transparent);transform:translateY(-1px)}
+.mt.on svg{stroke:#fff}.mt.on small{color:rgba(255,255,255,.92)}
+.mt.n.on{background:radial-gradient(circle at 20% 25%,#fff 0 1px,transparent 1.6px),radial-gradient(circle at 80% 18%,#fff 0 1px,transparent 1.6px),radial-gradient(circle at 62% 72%,#fff 0 .8px,transparent 1.4px),linear-gradient(160deg,var(--m1),var(--m2))}
+.addto{display:flex;align-items:center;gap:10px;border-radius:12px;padding:10px 12px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25);background:linear-gradient(110deg,var(--m1),var(--m2));margin-bottom:10px}
+.addto svg{width:30px;height:30px;stroke:#fff;flex:none}
+#results .btn{background:linear-gradient(110deg,var(--m1),var(--m2));color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.mb{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:10px;background:var(--card)}
+.mb .mh{display:flex;align-items:center;gap:8px;padding:8px 12px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25);background:linear-gradient(110deg,var(--m1),var(--m2));font-weight:700}
+.mh svg{width:22px;height:22px;stroke:#fff;flex:none}.mh .s{font-weight:600;font-size:12px;opacity:.92}
+.mb .item{padding:9px 12px}
+.mb.empty .mh{background:color-mix(in srgb,var(--m1) 13%,var(--card));color:var(--ink);text-shadow:none;cursor:pointer}.mb.empty .mh svg{stroke:var(--m1)}
+.qty{min-width:34px;text-align:center;font-weight:800}
 table.t{width:100%;border-collapse:collapse;font-size:13px}table.t td{padding:5px 0;border-top:1px solid var(--line)}table.t td:last-child{text-align:right;font-weight:700}
 </style>
 </head>
@@ -104,7 +120,15 @@ const fmtDay=s=>parseDay(s).toLocaleDateString('en-IN',{day:'numeric',month:'sho
 const r1=n=>Math.round(n*10)/10;
 const num=n=>Math.round(n)>=100?Math.round(n):r1(n);
 const autoMeal=()=>{const h=new Date().getHours();return h<11?'Breakfast':h<15?'Lunch':h<18?'Snack':'Dinner'};
-const MEALS=['Breakfast','Lunch','Snack','Dinner'];
+const MEALS=['Breakfast','Lunch','Snack','Dinner'];   // stored keys; shown as Breakfast / Lunch / Evening / Night
+const MEAL_UI={
+  Breakfast:{short:'Breakfast',full:'Breakfast',time:'6–10 am',c1:'#f08a0c',c2:'#f7b441',ic:'<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 7v3M4.6 11.6l1.8 1.8M19.4 11.6l-1.8 1.8"/>'},
+  Lunch:{short:'Lunch',full:'Lunch',time:'12–2 pm',c1:'#1d8fe0',c2:'#4fb9f2',ic:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>'},
+  Snack:{short:'Evening',full:'Evening snack',time:'4–6 pm',c1:'#d8455f',c2:'#f48a63',ic:'<path d="M5 11h11v4a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M16 12h1.5a2.5 2.5 0 0 1 0 5H16M8 4c0 1.5 1.5 1.5 1.5 3M12 4c0 1.5 1.5 1.5 1.5 3"/>'},
+  Dinner:{short:'Night',full:'Dinner (night)',time:'7–10 pm',c1:'#3a3d9e',c2:'#7062d6',ic:'<path d="M20 14.2A8 8 0 1 1 9.8 4a6.4 6.4 0 0 0 10.2 10.2z"/><path d="M17 3v3M15.5 4.5h3"/>'}
+};
+const mvars=m=>`--m1:${MEAL_UI[m].c1};--m2:${MEAL_UI[m].c2}`;
+const mealIcon=m=>`<svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${MEAL_UI[m].ic}</svg>`;
 const COLORS=['#1e9e54','#e8590c','#2f6fe4','#a63dc4','#0e8fa3','#c98a0a','#d6336c','#5c9a1c'];
 
 /* ---------- nutrients ---------- */
@@ -367,10 +391,22 @@ function viewToday(){
   <div class="card" id="sum"></div>
   <div class="card" id="checkin"></div>
   <div class="card"><h3 style="margin-bottom:8px">Add food for ${esc(m.name)}</h3>
-    <div class="seg">${MEALS.map(x=>`<button class="${x===S.meal?'on':''}" data-act="meal" data-m="${x}">${x}</button>`).join('')}</div>
-    <input type="search" id="q" placeholder="Search your foods — dal, roti, egg…" value="${esc(S.q)}" autocomplete="off">
-    <div id="results"></div></div>
+    <div class="meals" id="meals">${mealTiles()}</div>
+    <div id="addto">${addToBanner(m)}</div>
+    <input type="search" id="q" placeholder="Type a food name — dal, roti, egg…" value="${esc(S.q)}" autocomplete="off">
+    <div id="results" style="${mvars(S.meal)}"></div></div>
   <div class="card" id="entries"></div>`;
+}
+function mealTiles(){
+  return MEALS.map(x=>`<button class="mt ${x==='Dinner'?'n':''} ${x===S.meal?'on':''}" style="${mvars(x)}" data-act="meal" data-m="${x}">${mealIcon(x)}<span>${MEAL_UI[x].short}</span><small>${MEAL_UI[x].time}</small></button>`).join('');
+}
+function addToBanner(m){
+  const u=MEAL_UI[S.meal];
+  return `<div class="addto" style="${mvars(S.meal)}">${mealIcon(S.meal)}<div><div style="font-weight:800">Adding to ${u.full} <span style="font-weight:600;opacity:.92">· ${u.time}</span></div><div class="small" style="opacity:.95">for ${esc(m.name)} · ${S.day===ymd(new Date())?'today':fmtDay(S.day)}</div></div></div>`;
+}
+function paintMeal(){
+  const m=member(S.cur);if(!m||!$('#meals'))return;
+  $('#meals').innerHTML=mealTiles();$('#addto').innerHTML=addToBanner(m);$('#results').style.cssText=mvars(S.meal);
 }
 function refreshToday(){
   const m=member(S.cur);if(!m||!$('#sum'))return;
@@ -381,15 +417,17 @@ function refreshToday(){
     ${verdict(m,tot,t)}${nutBars(m,tot,t)}`;
   renderCheckin();
   const ls_=logsFor(m.id,S.day);
-  $('#entries').innerHTML=MEALS.map(meal=>{
-    const rows=ls_.filter(l=>l.meal===meal);if(!rows.length)return'';
-    const kc=rows.reduce((s,l)=>s+(+food(l.food_id)?.kcal||0)*l.servings,0);
-    return `<div class="small mute" style="margin-top:6px"><b>${meal}</b> · ${Math.round(kc)} kcal</div>`+rows.map(l=>{
-      const f=food(l.food_id);if(!f)return'';
-      return `<div class="item"><div class="sp"><div>${esc(f.name)}</div><div class="small mute">${esc(f.serving)}${l.logged_by&&l.logged_by!==m.name?' · added by '+esc(l.logged_by):''}</div></div>
-      <div class="step"><button data-act="step" data-id="${l.id}" data-d="-0.5">−</button><span>${l.servings}</span><button data-act="step" data-id="${l.id}" data-d="0.5">+</button></div>
-      <button class="btn ghost sm" data-act="del" data-id="${l.id}" aria-label="Remove">✕</button></div>`}).join('');
-  }).join('')||'<div class="mute">Nothing logged yet — search and tap a food above.</div>';
+  const dayKc=ls_.reduce((s,l)=>s+(+food(l.food_id)?.kcal||0)*l.servings,0);
+  $('#entries').innerHTML=`<div class="row"><h3 class="sp">What ${esc(m.name)} ate · ${isToday?'today':fmtDay(S.day)}</h3><b>${Math.round(dayKc)} kcal</b></div>`+MEALS.map(meal=>{
+    const u=MEAL_UI[meal],rows=ls_.filter(l=>l.meal===meal&&food(l.food_id));
+    if(!rows.length)return `<div class="mb empty" style="${mvars(meal)}"><div class="mh" data-act="meal" data-m="${meal}">${mealIcon(meal)}<div class="sp">${u.full} <span class="s">· ${u.time}</span></div><span class="s">nothing yet · tap to add</span></div></div>`;
+    const kc=rows.reduce((s,l)=>s+food(l.food_id).kcal*l.servings,0),pr=rows.reduce((s,l)=>s+food(l.food_id).protein*l.servings,0);
+    return `<div class="mb" style="${mvars(meal)}"><div class="mh">${mealIcon(meal)}<div class="sp">${u.full}<div class="s">${u.time}</div></div><div style="text-align:right">${Math.round(kc)} kcal<div class="s">${r1(pr)} g protein</div></div></div>`+rows.map(l=>{
+      const f=food(l.food_id);
+      return `<div class="item"><div class="sp"><div><b>${esc(f.name)}</b></div><div class="small mute">${esc(f.serving)} × ${l.servings} = ${Math.round(f.kcal*l.servings)} kcal${l.logged_by&&l.logged_by!==m.name?' · added by '+esc(l.logged_by):''}</div></div>
+      <div class="step"><button data-act="step" data-id="${l.id}" data-d="-0.5">−</button><span class="qty">${l.servings}</span><button data-act="step" data-id="${l.id}" data-d="0.5">+</button></div>
+      <button class="btn ghost sm" data-act="del" data-id="${l.id}" aria-label="Remove">✕</button></div>`}).join('')+`</div>`;
+  }).join('');
   renderResults();
 }
 function renderCheckin(){
@@ -424,13 +462,9 @@ async function saveDaily(patch){
 }
 function renderResults(){
   const el=$('#results');if(!el)return;
-  const q=S.q.trim().toLowerCase();let list,title;
-  if(q){list=S.foods.filter(f=>f.name.toLowerCase().includes(q)).slice(0,15);title='Results'}
-  else{
-    const c={};S.logs.filter(l=>l.member_id===S.cur).forEach(l=>c[l.food_id]=(c[l.food_id]||0)+1);
-    list=Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,8).map(food).filter(Boolean);title='Frequent';
-    if(!list.length){list=S.foods.slice(0,8);title='Common foods'}
-  }
+  const q=S.q.trim().toLowerCase();
+  if(!q){el.innerHTML='<div class="small mute" style="margin:10px 0 2px">Start typing a food name above, then tap <b>+ Add</b>.</div>';return}
+  const list=S.foods.filter(f=>f.name.toLowerCase().includes(q)).slice(0,15),title='Matching foods';
   el.innerHTML=`<div class="small mute" style="margin:10px 0 2px">${title}</div>`+(list.map(f=>`<div class="item"><div class="sp"><div>${esc(f.name)}</div><div class="small mute">${esc(f.serving)} · ${num(f.kcal)} kcal · ${r1(f.protein)} g protein</div></div><button class="btn sm" data-act="add" data-id="${f.id}">+ Add</button></div>`).join('')||'<div class="mute">No match. Add it in the Foods tab.</div>');
 }
 
@@ -569,7 +603,7 @@ document.addEventListener('click',e=>{
   if(a==='tab'){S.tab=el.dataset.t;ls.set('ffl_tab',S.tab);render()}
   else if(a==='member'){S.cur=id;ls.set('ffl_cur',id);render()}
   else if(a==='go'){S.cur=id;ls.set('ffl_cur',id);S.tab='today';render()}
-  else if(a==='meal'){S.meal=el.dataset.m;document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.meal))}
+  else if(a==='meal'){S.meal=el.dataset.m;paintMeal();if(el.classList.contains('mh'))$('#meals').scrollIntoView({block:'center',behavior:'smooth'})}
   else if(a==='add')addLog(id);
   else if(a==='step')stepLog(id,+el.dataset.d);
   else if(a==='del')delLog(id);
