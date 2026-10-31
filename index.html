@@ -68,6 +68,9 @@ dialog::backdrop{background:rgba(10,30,18,.55)}
   nav button:hover{background:rgba(255,255,255,.16)}
   nav button.on{background:#fff;color:#12713f}
 }
+input[type=range]{width:100%;accent-color:var(--acc);height:28px;margin:2px 0}
+.q{font-weight:700}
+.sect{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
 table.t{width:100%;border-collapse:collapse;font-size:13px}table.t td{padding:5px 0;border-top:1px solid var(--line)}table.t td:last-child{text-align:right;font-weight:700}
 </style>
 </head>
@@ -205,9 +208,9 @@ const CFG=window.FFL_CONFIG||{};
 const REMOTE=!!(CFG.url&&CFG.key);
 const SB=REMOTE?supabase.createClient(CFG.url,CFG.key):null;
 const db={
-  async req(method,path,body){
+  async req(method,path,body,prefer='return=representation'){
     const {data:{session}}=await SB.auth.getSession();
-    const h={apikey:CFG.key,Authorization:'Bearer '+(session?.access_token||CFG.key),'Content-Type':'application/json',Prefer:'return=representation'};
+    const h={apikey:CFG.key,Authorization:'Bearer '+(session?.access_token||CFG.key),'Content-Type':'application/json',Prefer:prefer};
     const r=await fetch(CFG.url.replace(/\/$/,'')+'/rest/v1/'+path,{method,headers:h,body:body?JSON.stringify(body):undefined});
     if(!r.ok) throw new Error(method+' '+path.split('?')[0]+' failed: '+(await r.text()).slice(0,200));
     return method==='DELETE'?null:r.json();
@@ -223,6 +226,12 @@ const db={
     const a=this.loc(t);const out=rows.map(r=>({id:crypto.randomUUID(),created_at:new Date().toISOString(),...r}));
     this.save(t,a.concat(out));return out;
   },
+  async upsert(t,row){
+    if(REMOTE) return this.req('POST',t+'?on_conflict=member_id,day',[row],'resolution=merge-duplicates,return=representation');
+    const a=this.loc(t);const i=a.findIndex(x=>x.member_id===row.member_id&&x.day===row.day);
+    if(i<0){const n={id:crypto.randomUUID(),created_at:new Date().toISOString(),...row};a.push(n);this.save(t,a);return[n]}
+    a[i]={...a[i],...row};this.save(t,a);return[a[i]];
+  },
   async update(t,id,patch){
     if(REMOTE) return (await this.req('PATCH',t+'?id=eq.'+id,patch))[0];
     const a=this.loc(t);const i=a.findIndex(x=>x.id===id);a[i]={...a[i],...patch};this.save(t,a);return a[i];
@@ -234,7 +243,7 @@ const db={
 };
 
 /* ---------- state ---------- */
-const S={members:[],foods:[],logs:[],cur:ls.get('ffl_cur'),me:ls.get('ffl_me')||'',tab:ls.get('ffl_tab')||'today',
+const S={members:[],foods:[],logs:[],daily:[],dailyOk:true,cur:ls.get('ffl_cur'),me:ls.get('ffl_me')||'',tab:ls.get('ffl_tab')||'today',
   day:ymd(new Date()),meal:autoMeal(),q:'',range:14,loaded:false};
 const SINCE_DAYS=120;
 let charts=[];
@@ -242,6 +251,8 @@ let charts=[];
 async function load(){
   const since=addDays(ymd(new Date()),-SINCE_DAYS);
   const [m,f,l]=await Promise.all([db.list('ffl_members'),db.list('ffl_foods'),db.list('ffl_logs',since)]);
+  const dl=await db.list('ffl_daily',since).catch(()=>null);
+  S.dailyOk=!!dl;S.daily=dl||[];
   S.members=m;S.logs=l;S.foods=f;
   const em=S.members.find(x=>S.email&&(x.email||'').toLowerCase()===S.email.toLowerCase());
   if(em&&!ls.get('ffl_me')){S.me=S.cur=em.id;ls.set('ffl_me',em.id);ls.set('ffl_cur',em.id)}
@@ -274,10 +285,18 @@ function targets(m){
   const vitc=age<10?40:age<19?70:(male?80:65);
   const b12=age<4?1.2:age<10?2.0:2.2;
   const folate=age<4?120:age<7?135:age<10?170:age<13?220:age<16?285:300;
-  return {kcal:Math.round(kcal/10)*10,protein:Math.round(protein),carbs:Math.round(carbs),fibre:Math.round(14*kcal/1000),fat:Math.round(fat),
+  let water;
+  if(age<14){const hs=w<=10?w*100:w<=20?1000+(w-10)*50:1500+(w-20)*20;water=Math.min(Math.max(hs*0.8,1000),2000)}
+  else if(age<19)water=Math.min(Math.max(w*30,1800),3000);
+  else water=Math.min(Math.max(w*33+({moderate:250,active:500}[m.activity]||0),2000),3500);
+  water=Math.round(water/50)*50;
+  const steps=age<6?10000:age<18?12000:age>=60?6000:obj==='lose'?10000:8000;
+  const screen=age<6?60:age<18?120:180;
+  return {water,steps,screen,kcal:Math.round(kcal/10)*10,protein:Math.round(protein),carbs:Math.round(carbs),fibre:Math.round(14*kcal/1000),fat:Math.round(fat),
     calcium,iron,vita,vitc,b12,folate,bmr:Math.round(bmr),age};
 }
 function status(n,p){
+  if(n.t==='limit') return p<=1?{c:'g',l:'Within limit'}:p<=1.25?{c:'a',l:'A bit over'}:{c:'r',l:'Over'};
   if(n.t==='energy') return p<.85?{c:'a',l:'Low'}:p<=1.1?{c:'g',l:'On track'}:p<=1.25?{c:'a',l:'A bit high'}:{c:'r',l:'High'};
   if(n.t==='range') return p>=.8&&p<=1.15?{c:'g',l:'On track'}:{c:'a',l:p<.8?'Low':'High'};
   return p>=.95?{c:'g',l:'Met'}:p>=.7?{c:'a',l:'Almost'}:{c:'r',l:'Low'};
@@ -296,6 +315,14 @@ function totals(mid,day){
 function avatar(m,cls=''){return `<span class="av ${cls}" style="background:${mcolor(m)}">${esc(m.name.trim()[0]||'?').toUpperCase()}</span>`}
 function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),1600)}
 const meName=()=>member(S.me)?.name||'';
+const dailyFor=(mid,day)=>S.daily.find(d=>d.member_id===mid&&d.day===day);
+const fmtL=ml=>(ml/1000).toFixed(2).replace(/\.?0+$/,'');
+const fmtHM=m=>m<60?m+'m':Math.floor(m/60)+'h'+(m%60?' '+(m%60)+'m':'');
+const ACTS=[
+ {k:'water',n:'Water',u:'L',val:d=>d.water_ml==null?null:d.water_ml/1000,tg:t=>t.water/1000},
+ {k:'steps',n:'Steps',u:'steps',val:d=>d.steps,tg:t=>t.steps},
+ {k:'screen',n:'Screen time',u:'hours',t:'limit',val:d=>d.screen_min==null?null:d.screen_min/60,tg:t=>t.screen/60}];
+function barHtml(p,s){return `<div class="bar ${s.c==='g'?'':s.c}"><i style="width:${Math.min(p,1.4)/1.4*100}%"></i><span class="mk" style="left:${100/1.4}%"></span></div>`}
 
 /* ---------- views ---------- */
 function chips(){
@@ -338,6 +365,7 @@ function viewToday(){
   const m=member(S.cur);if(!m) return emptyState();
   return `${chips()}
   <div class="card" id="sum"></div>
+  <div class="card" id="checkin"></div>
   <div class="card"><h3 style="margin-bottom:8px">Add food for ${esc(m.name)}</h3>
     <div class="seg">${MEALS.map(x=>`<button class="${x===S.meal?'on':''}" data-act="meal" data-m="${x}">${x}</button>`).join('')}</div>
     <input type="search" id="q" placeholder="Search your foods — dal, roti, egg…" value="${esc(S.q)}" autocomplete="off">
@@ -351,6 +379,7 @@ function refreshToday(){
   $('#sum').innerHTML=`<div class="row" style="margin-bottom:6px">${avatar(m,'lg')}<div class="sp"><h3>${esc(m.name)} · ${isToday?'Today':fmtDay(S.day)}</h3>
     <div class="small mute">${t.age} yrs · ${m.height_cm} cm · ${m.weight_kg} kg · goal: ${{growth:'healthy growth',lose:'weight loss',maintain:'maintain weight',gain:'muscle gain'}[m.objective]}</div></div></div>
     ${verdict(m,tot,t)}${nutBars(m,tot,t)}`;
+  renderCheckin();
   const ls_=logsFor(m.id,S.day);
   $('#entries').innerHTML=MEALS.map(meal=>{
     const rows=ls_.filter(l=>l.meal===meal);if(!rows.length)return'';
@@ -362,6 +391,36 @@ function refreshToday(){
       <button class="btn ghost sm" data-act="del" data-id="${l.id}" aria-label="Remove">✕</button></div>`}).join('');
   }).join('')||'<div class="mute">Nothing logged yet — search and tap a food above.</div>';
   renderResults();
+}
+function renderCheckin(){
+  const el=$('#checkin');if(!el)return;
+  const m=member(S.cur);if(!m)return;
+  if(!S.dailyOk){el.innerHTML='<h3>Daily check-in</h3><p class="mute">Water, steps and screen-time tracking needs one more database step: run <b>add_daily_tracking.sql</b> in Supabase, then refresh.</p>';return}
+  const t=targets(m),d=dailyFor(m.id,S.day)||{};
+  const w=d.water_ml??0,wp=w/t.water,ws=status({},wp);
+  const st=d.steps,sp=(st||0)/t.steps,ss=status({},sp);
+  const sc=d.screen_min,cp=(sc||0)/t.screen,cs=status({t:'limit'},cp);
+  el.innerHTML=`<h3 style="margin-bottom:2px">Daily check-in</h3><div class="small mute">Answer for ${esc(m.name)} · ${S.day===ymd(new Date())?'today':fmtDay(S.day)}</div>
+  <div class="sect" style="border:0;margin-top:8px;padding-top:0"><div class="top row"><span class="q sp">💧 How much water have you had?</span><span><b id="wv">${fmtL(w)}</b> / ${fmtL(t.water)} L <span class="tag ${ws.c==='g'?'':ws.c}" id="wt">${ws.l}</span></span></div>
+    <input type="range" id="wr" min="0" max="${Math.max(4000,Math.ceil(t.water*1.5/250)*250)}" step="250" value="${w}">
+    <div id="wb">${barHtml(wp,ws)}</div>
+    <div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="glass">+ 1 glass (250 ml)</button><span class="small mute">Target ${fmtL(t.water)} L, based on age, weight and activity.</span></div></div>
+  <div class="sect"><div class="top row"><span class="q sp">👣 How many steps did you walk?</span><span>${st==null?'<span class="mute">not answered</span>':'<b>'+st.toLocaleString('en-IN')+'</b>'} / ${t.steps.toLocaleString('en-IN')} <span class="tag ${ss.c==='g'?'':ss.c}">${st==null?'—':ss.l}</span></span></div>
+    <div class="row" style="margin:6px 0"><input type="number" id="st" inputmode="numeric" min="0" max="100000" step="100" placeholder="e.g. 6500" value="${st??''}" style="max-width:170px"><span class="small mute">Check the Health / Google Fit / Samsung Health app on your phone.</span></div>
+    ${barHtml(sp,ss)}</div>
+  <div class="sect"><div class="top row"><span class="q sp">📱 How long on screens for fun today?</span><span id="scv">${sc==null?'<span class="mute">not answered</span>':'<b>'+fmtHM(sc)+'</b>'} / limit ${fmtHM(t.screen)} <span class="tag ${cs.c==='g'?'':cs.c}">${sc==null?'—':cs.l}</span></span></div>
+    <div class="small mute">Phone, TV, tablet, games, YouTube — not school or work.</div>
+    <input type="range" id="sc" min="0" max="480" step="15" value="${sc??0}">
+    <div id="scb">${barHtml(cp,cs)}</div>
+    <div class="row" style="margin-top:8px"><button class="btn ghost sm" data-act="noscreen">No screen time today</button><span class="small mute">Slide to answer. Lower is better.</span></div></div>`;
+}
+async function saveDaily(patch){
+  const mid=S.cur,day=S.day;
+  try{
+    const [r]=await db.upsert('ffl_daily',{member_id:mid,day,updated_by:meName(),...patch});
+    const i=S.daily.findIndex(x=>x.member_id===mid&&x.day===day);if(i<0)S.daily.push(r);else S.daily[i]=r;
+    refreshToday();toast('Saved');
+  }catch(err){fail(err)}
 }
 function renderResults(){
   const el=$('#results');if(!el)return;
@@ -383,14 +442,17 @@ function viewFamily(){
     const ate=logsFor(m.id,S.day).map(l=>food(l.food_id)?.name.split(' (')[0]).filter(Boolean);
     const mini=['kcal','protein','fibre','calcium','iron'].map(k=>{const n=NUT.find(x=>x.k===k),p=tot[k]/t[k],s=status(n,p);
       return `<div class="nut"><div class="top"><span>${n.n}</span><span>${num(tot[k])}/${t[k]} ${n.u}</span></div><div class="bar ${s.c==='g'?'':s.c}"><i style="width:${Math.min(p,1)*100}%"></i></div></div>`}).join('');
+    const d=dailyFor(m.id,S.day)||{};
+    const extra=[['Water',d.water_ml,t.water,v=>fmtL(v)+' L'],['Steps',d.steps,t.steps,v=>v.toLocaleString('en-IN')]].map(([n,v,tg,f])=>{const p=v==null?0:v/tg,s=status({},p);
+      return `<div class="nut"><div class="top"><span>${n}</span><span>${v==null?'—':f(v)} / ${f(tg)}</span></div><div class="bar ${s.c==='g'?'':s.c}"><i style="width:${Math.min(p,1)*100}%"></i></div></div>`}).join('');
     return `<div class="card" data-act="go" data-id="${m.id}" style="cursor:pointer"><div class="row">${avatar(m,'lg')}<div class="sp"><h3>${esc(m.name)}</h3><div class="small mute">${t.age} yrs</div></div><span class="tag ${ok>=8?'':ok>=5?'a':'r'}">${ok}/${NUT.length} on track</span></div>
-    ${mini}<div class="small mute" style="margin-top:6px">${ate.length?esc([...new Set(ate)].slice(0,8).join(', ')):'Nothing logged'}</div></div>`}).join('')}</div>`;
+    ${mini}${extra}<div class="small mute" style="margin-top:6px">${ate.length?esc([...new Set(ate)].slice(0,8).join(', ')):'Nothing logged'}</div></div>`}).join('')}</div>`;
 }
 
 function viewTrends(){
   const m=member(S.cur);if(!m) return emptyState();
   return `${chips()}<div class="seg">${[7,14,30].map(n=>`<button class="${S.range===n?'on':''}" data-act="range" data-n="${n}">${n} days</button>`).join('')}</div>
-  <div class="grid">${NUT.map(n=>`<div class="card"><div class="row"><b class="sp">${n.n} <span class="mute small">(${n.u})</span></b><span class="small mute" id="avg_${n.k}"></span></div><div class="cv"><canvas id="c_${n.k}"></canvas></div></div>`).join('')}</div>`;
+  <div class="grid">${[...NUT,...ACTS].map(n=>`<div class="card"><div class="row"><b class="sp">${n.n} <span class="mute small">(${n.u})</span></b><span class="small mute" id="avg_${n.k}"></span></div><div class="cv"><canvas id="c_${n.k}"></canvas></div></div>`).join('')}</div>`;
 }
 function drawCharts(){
   charts.forEach(c=>c.destroy());charts=[];
@@ -398,16 +460,16 @@ function drawCharts(){
   const t=targets(m),cs=getComputedStyle(document.documentElement),css=v=>cs.getPropertyValue(v).trim();
   const days=[];for(let i=S.range-1;i>=0;i--)days.push(addDays(ymd(new Date()),-i));
   const per=days.map(d=>logsFor(m.id,d).length?totals(m.id,d):null);
-  for(const n of NUT){
-    const vals=per.map(p=>p?r1(p[n.k]):null);
-    const cols=per.map(p=>p?css('--'+status(n,p[n.k]/t[n.k]).c):'transparent');
-    const logged=per.filter(Boolean);
-    if(logged.length) $('#avg_'+n.k).textContent='avg '+Math.round(logged.reduce((s,p)=>s+p[n.k],0)/logged.length/t[n.k]*100)+'% of target';
-    else $('#avg_'+n.k).textContent='no data';
+  const specs=[...NUT.map(n=>({n,vals:per.map(p=>p?p[n.k]:null),tg:t[n.k]})),
+    ...ACTS.map(n=>({n,vals:days.map(d=>{const x=dailyFor(m.id,d);return x?n.val(x):null}),tg:n.tg(t)}))];
+  for(const {n,vals,tg} of specs){
+    const cols=vals.map(v=>v==null?'transparent':css('--'+status(n,v/tg).c));
+    const logged=vals.filter(v=>v!=null);
+    $('#avg_'+n.k).textContent=logged.length?'avg '+Math.round(logged.reduce((s,v)=>s+v,0)/logged.length/tg*100)+'% of '+(n.t==='limit'?'limit':'target'):'no data';
     charts.push(new Chart($('#c_'+n.k),{data:{labels:days.map(fmtDay),datasets:[
-      {type:'bar',data:vals,backgroundColor:cols,borderRadius:3,order:2},
-      {type:'line',data:days.map(()=>t[n.k]),borderColor:css('--tgt'),borderDash:[5,4],borderWidth:2,pointRadius:0,order:1}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex?'Target '+t[n.k]:c.parsed.y+' '+n.u}}},
+      {type:'bar',data:vals.map(v=>v==null?null:r1(v)),backgroundColor:cols,borderRadius:3,order:2},
+      {type:'line',data:days.map(()=>tg),borderColor:css('--tgt'),borderDash:[5,4],borderWidth:2,pointRadius:0,order:1}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.datasetIndex?(n.t==='limit'?'Limit ':'Target ')+r1(tg):c.parsed.y+' '+n.u}}},
         scales:{x:{grid:{display:false},ticks:{color:css('--mute'),maxTicksLimit:6,font:{size:10}}},y:{beginAtZero:true,grid:{color:css('--line')},ticks:{color:css('--mute'),font:{size:10}}}}}}));
   }
 }
@@ -424,7 +486,7 @@ function renderFoodList(){
 function viewPeople(){
   return `<div class="row" style="margin-bottom:10px"><h3 class="sp">Family members</h3><button class="btn" data-act="newMember">+ Add</button></div>
   ${S.members.map(m=>{const t=targets(m);return `<div class="card"><div class="row">${avatar(m,'lg')}<div class="sp"><h3>${esc(m.name)}</h3><div class="small mute">${t.age} yrs · ${m.height_cm} cm · ${m.weight_kg} kg · BMR ${t.bmr} kcal</div></div><button class="btn ghost sm" data-act="editMember" data-id="${m.id}">Edit</button></div>
-  <table class="t" style="margin-top:10px">${NUT.map(n=>`<tr><td>Daily ${n.n.toLowerCase()}</td><td>${t[n.k]} ${n.u}</td></tr>`).join('')}</table></div>`}).join('')||emptyState()}
+  <table class="t" style="margin-top:10px">${NUT.map(n=>`<tr><td>Daily ${n.n.toLowerCase()}</td><td>${t[n.k]} ${n.u}</td></tr>`).join('')}<tr><td>Daily water</td><td>${fmtL(t.water)} L</td></tr><tr><td>Daily steps</td><td>${t.steps.toLocaleString('en-IN')}</td></tr><tr><td>Screen time (for fun), at most</td><td>${fmtHM(t.screen)}</td></tr></table></div>`}).join('')||emptyState()}
   ${REMOTE?`<div class="card"><div class="small mute">Signed in as ${esc(S.email)}</div><button class="btn ghost sm" data-act="signout" style="margin-top:8px">Sign out</button></div>`:''}
   <div class="small mute">Targets are estimates from age, sex, height, weight, activity and goal (energy via Mifflin-St Jeor / Schofield; vitamins and minerals follow ICMR-NIN style RDAs). They are a guide, not medical advice — for a child's weight concerns or any health condition, check with your doctor or a dietitian.</div>`;
 }
@@ -509,6 +571,8 @@ document.addEventListener('click',e=>{
   else if(a==='add')addLog(id);
   else if(a==='step')stepLog(id,+el.dataset.d);
   else if(a==='del')delLog(id);
+  else if(a==='glass')saveDaily({water_ml:(dailyFor(S.cur,S.day)?.water_ml||0)+250});
+  else if(a==='noscreen')saveDaily({screen_min:0});
   else if(a==='day'){const d=addDays(S.day,+el.dataset.d);if(d<=ymd(new Date())){S.day=d;render()}}
   else if(a==='range'){S.range=+el.dataset.n;render()}
   else if(a==='signout'){SB.auth.signOut().then(()=>location.reload())}
@@ -518,8 +582,15 @@ document.addEventListener('click',e=>{
   else if(a==='editFood')foodForm(id);
 });
 document.addEventListener('input',e=>{
+  if(e.target.id==='wr'){const m=member(S.cur),t=targets(m),v=+e.target.value;$('#wv').textContent=fmtL(v);const s=status({},v/t.water);$('#wt').textContent=s.l;$('#wb').innerHTML=barHtml(v/t.water,s)}
+  if(e.target.id==='sc'){const m=member(S.cur),t=targets(m),v=+e.target.value,s=status({t:'limit'},v/t.screen);$('#scv').innerHTML=`<b>${fmtHM(v)}</b> / limit ${fmtHM(t.screen)}`;$('#scb').innerHTML=barHtml(v/t.screen,s)}
   if(e.target.id==='q'){S.q=e.target.value;renderResults()}
   if(e.target.id==='fq'){S.fq=e.target.value;renderFoodList()}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='wr')saveDaily({water_ml:+e.target.value});
+  if(e.target.id==='sc')saveDaily({screen_min:+e.target.value});
+  if(e.target.id==='st')saveDaily({steps:e.target.value===''?null:Math.max(0,Math.round(+e.target.value))});
 });
 $('#daypick').addEventListener('change',e=>{if(e.target.value&&e.target.value<=ymd(new Date())){S.day=e.target.value;render()}});
 $('#me').addEventListener('change',e=>{S.me=e.target.value;ls.set('ffl_me',S.me)});

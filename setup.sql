@@ -70,6 +70,24 @@ create policy ffl_all on ffl_logs    for all to authenticated using (ffl_is_fami
 grant select, insert, update, delete on ffl_members, ffl_foods, ffl_logs to authenticated;
 revoke all on ffl_members, ffl_foods, ffl_logs from anon;
 
+-- Daily check-in tracking (water, steps, screen time)
+create table if not exists ffl_daily (
+  id uuid primary key default gen_random_uuid(),
+  member_id uuid not null references ffl_members(id) on delete cascade,
+  day date not null,
+  water_ml integer,
+  steps integer,
+  screen_min integer,
+  updated_by text,
+  created_at timestamptz not null default now(),
+  unique (member_id, day)
+);
+alter table ffl_daily enable row level security;
+drop policy if exists ffl_all on ffl_daily;
+create policy ffl_all on ffl_daily for all to authenticated using (ffl_is_family()) with check (ffl_is_family());
+grant select, insert, update, delete on ffl_daily to authenticated;
+revoke all on ffl_daily from anon;
+
 -- The four family Google accounts (add or remove rows later in the Table Editor).
 insert into ffl_family_emails (email) values
   ('vasudev.nathan@gmail.com'),
