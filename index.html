@@ -556,7 +556,9 @@ async function addLog(fid){
   }catch(err){fail(err)}
 }
 async function stepLog(id,d){
-  const l=S.logs.find(x=>x.id===id);const v=Math.max(0.5,+l.servings+d);
+  const l=S.logs.find(x=>x.id===id);const cur=+l.servings;
+  const inc=d>0?(cur<1?0.25:0.5):(cur<=1?0.25:0.5);   // quarter portions up to 1, halves above
+  const v=Math.max(0.25,cur+(d>0?inc:-inc));
   try{const r=await db.update('ffl_logs',id,{servings:v});Object.assign(l,r);refreshToday()}catch(err){fail(err)}
 }
 async function delLog(id){try{await db.remove('ffl_logs',id);S.logs=S.logs.filter(l=>l.id!==id);refreshToday()}catch(err){fail(err)}}
