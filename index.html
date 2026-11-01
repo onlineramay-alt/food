@@ -90,6 +90,9 @@ input[type=range]{width:100%;accent-color:var(--acc);height:28px;margin:2px 0}
 .mh svg{width:22px;height:22px;stroke:#fff;flex:none}.mh .s{font-weight:600;font-size:12px;opacity:.92}
 .mb .item{padding:9px 12px}
 .mb.empty .mh{background:color-mix(in srgb,var(--m1) 13%,var(--card));color:var(--ink);text-shadow:none;cursor:pointer}.mb.empty .mh svg{stroke:var(--m1)}
+.nut{cursor:pointer;border-radius:8px}.nut:hover{background:color-mix(in srgb,var(--acc) 7%,transparent)}
+.dt{width:100%;border-collapse:collapse;font-size:13px}.dt th{text-align:left;font-size:11px;color:var(--mute);font-weight:700;padding:4px 6px 4px 0;border-bottom:1.5px solid var(--line)}
+.dt td{padding:7px 6px 7px 0;border-top:1px solid var(--line);vertical-align:top}.dt .r{text-align:right;white-space:nowrap}.dt tfoot td{font-weight:800;border-top:2px solid var(--line)}
 .qty{min-width:34px;text-align:center;font-weight:800}
 table.t{width:100%;border-collapse:collapse;font-size:13px}table.t td{padding:5px 0;border-top:1px solid var(--line)}table.t td:last-child{text-align:right;font-weight:700}
 </style>
@@ -364,9 +367,27 @@ function emptyState(){
 function nutBars(m,tot,t){
   return NUT.map(n=>{
     const p=t[n.k]?tot[n.k]/t[n.k]:0,s=status(n,p);
-    return `<div class="nut"><div class="top"><span>${n.n}</span><span><b>${num(tot[n.k])}</b> / ${t[n.k]} ${n.u} <span class="tag ${s.c==='g'?'':s.c}">${s.l}</span></span></div>
+    return `<div class="nut" data-act="nut" data-k="${n.k}" title="Tap to see how this adds up"><div class="top"><span>${n.n} <span class="mute">›</span></span><span><b>${num(tot[n.k])}</b> / ${t[n.k]} ${n.u} <span class="tag ${s.c==='g'?'':s.c}">${s.l}</span></span></div>
     <div class="bar ${s.c==='g'?'':s.c}"><i style="width:${Math.min(p,1.4)/1.4*100}%"></i><span class="mk" style="left:${100/1.4}%"></span></div></div>`;
   }).join('');
+}
+const nf=v=>v===0?'0':v>=100?Math.round(v):v>=10?r1(v):Math.round(v*100)/100;
+function nutDetail(k){
+  const m=member(S.cur),n=NUT.find(x=>x.k===k);if(!m||!n)return;
+  const t=targets(m),total=totals(m.id,S.day)[k],p=t[k]?total/t[k]:0,s=status(n,p);
+  const rows=logsFor(m.id,S.day).map(l=>{const f=food(l.food_id);return f&&{l,f,per:+f[k]||0,amt:(+f[k]||0)*(+l.servings)}}).filter(Boolean).sort((a,b)=>b.amt-a.amt);
+  const day=S.day===ymd(new Date())?'today':fmtDay(S.day);
+  $('#dlg').innerHTML=`<h3>${n.n} · ${esc(m.name)} · ${day}</h3>
+  <p style="margin:6px 0 10px"><b>${nf(total)}</b> of <b>${t[k]} ${n.u}</b> target (${Math.round(p*100)}%) <span class="tag ${s.c==='g'?'':s.c}">${s.l}</span></p>`+
+  (rows.length?`<div style="overflow-x:auto"><table class="dt"><thead><tr><th>Food</th><th class="r">Per serving × qty</th><th class="r">Adds</th><th class="r">Share</th></tr></thead><tbody>${rows.map(r=>`<tr${r.amt?'':' style="opacity:.55"'}>
+    <td><b>${esc(r.f.name)}</b><div class="small mute">${MEAL_UI[r.l.meal]?.short||esc(r.l.meal)} · ${esc(r.f.serving)}</div></td>
+    <td class="r">${nf(r.per)} × ${r.l.servings}</td><td class="r"><b>${nf(r.amt)}</b></td>
+    <td class="r">${total?Math.round(r.amt/total*100):0}%</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="2">Total</td><td class="r">${nf(total)} ${n.u}</td><td class="r">100%</td></tr></tfoot></table></div>`
+   :'<p class="mute">Nothing logged yet for this day.</p>')+
+  `<p class="small mute" style="margin-top:10px">Each food's value per serving × how many servings you logged, added up. The ${t[k]} ${n.u} target is worked out from ${esc(m.name)}'s age, sex, weight and goal.</p>
+  <div class="row" style="margin-top:12px"><span class="sp"></span><button type="button" class="btn" onclick="$('#dlg').close()">Close</button></div>`;
+  $('#dlg').showModal();
 }
 function suggest(k,t){
   const n=NUT.find(x=>x.k===k);
@@ -393,14 +414,14 @@ function verdict(m,tot,t){
 function viewToday(){
   const m=member(S.cur);if(!m) return emptyState();
   return `${chips()}
-  <div class="card" id="sum"></div>
-  <div class="card" id="checkin"></div>
   <div class="card"><h3 style="margin-bottom:8px">Add food for ${esc(m.name)}</h3>
     <div class="meals" id="meals">${mealTiles()}</div>
     <div id="addto">${addToBanner(m)}</div>
     <input type="search" id="q" placeholder="Type a food name — dal, roti, egg…" value="${esc(S.q)}" autocomplete="off">
     <div id="results" style="${mvars(S.meal)}"></div></div>
-  <div class="card" id="entries"></div>`;
+  <div class="card" id="entries"></div>
+  <div class="card" id="sum"></div>
+  <div class="card" id="checkin"></div>`;
 }
 function mealTiles(){
   return MEALS.map(x=>`<button class="mt ${x==='Dinner'?'n':''} ${x===S.meal?'on':''}" style="${mvars(x)}" data-act="meal" data-m="${x}">${mealIcon(x)}<span>${MEAL_UI[x].short}</span><small>${MEAL_UI[x].time}</small></button>`).join('');
@@ -419,7 +440,7 @@ function refreshToday(){
   const isToday=S.day===ymd(new Date());
   $('#sum').innerHTML=`<div class="row" style="margin-bottom:6px">${avatar(m,'lg')}<div class="sp"><h3>${esc(m.name)} · ${isToday?'Today':fmtDay(S.day)}</h3>
     <div class="small mute">${t.age} yrs · ${m.height_cm} cm · ${m.weight_kg} kg · goal: ${{growth:'healthy growth',lose:'weight loss',maintain:'maintain weight',gain:'muscle gain'}[m.objective]}</div></div></div>
-    ${verdict(m,tot,t)}${nutBars(m,tot,t)}`;
+    ${verdict(m,tot,t)}<div class="small mute" style="margin:2px 0 4px">Tap any nutrient to see which foods it came from.</div>${nutBars(m,tot,t)}`;
   renderCheckin();
   const ls_=logsFor(m.id,S.day);
   const dayKc=ls_.reduce((s,l)=>s+(+food(l.food_id)?.kcal||0)*l.servings,0);
@@ -616,6 +637,7 @@ document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id;
   if(a==='theme')toggleTheme();
+  else if(a==='nut')nutDetail(el.dataset.k);
   else if(a==='tab'){S.tab=el.dataset.t;ls.set('ffl_tab',S.tab);render()}
   else if(a==='member'){S.cur=id;ls.set('ffl_cur',id);render()}
   else if(a==='go'){S.cur=id;ls.set('ffl_cur',id);S.tab='today';render()}
