@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<script>try{var t=localStorage.getItem('ffl_theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <meta name="theme-color" content="#0473ea">
 <title>Food for the Family</title>
 <style>
-:root{--bg:#f1f5fa;--card:#fff;--ink:#0b2239;--mute:#52667a;--line:#d5e0ea;--acc:#0473ea;--acc-ink:#fff;--g:#21aa47;--a:#f0a41c;--r:#e5483c;--track:#dde7f1;--tgt:#0b2239;--hd1:#0a3d91;--hd2:#0473ea;--shadow:0 1px 2px rgba(10,35,70,.08),0 6px 18px rgba(10,35,70,.07)}
-@media (prefers-color-scheme:dark){:root{--bg:#0a1522;--card:#12202f;--ink:#e8f0f8;--mute:#9bb0c4;--line:#223445;--acc:#4a9bff;--acc-ink:#04101f;--g:#3ccf6a;--a:#f2b531;--r:#f06a5f;--track:#223445;--tgt:#e8f0f8;--hd1:#072a5c;--hd2:#0a56b8;--shadow:0 1px 2px rgba(0,0,0,.4)}}
+:root{--bg:#f1f5fa;--card:#fff;--ink:#0b2239;--mute:#52667a;--line:#d5e0ea;--acc:#0473ea;--acc-ink:#fff;--g:#8ad7a2;--a:#f9d78c;--r:#f5a39c;--gt:#14663a;--at:#6b4a00;--rt:#8c2018;--track:#e3ebf4;--tgt:#0b2239;--hd1:#0a3d91;--hd2:#0473ea;--shadow:0 1px 2px rgba(10,35,70,.08),0 6px 18px rgba(10,35,70,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0a1522;--card:#12202f;--ink:#e8f0f8;--mute:#9bb0c4;--line:#223445;--acc:#4a9bff;--acc-ink:#04101f;--g:#4aa56a;--a:#c9a04a;--r:#c9685f;--gt:#04180b;--at:#2b1d00;--rt:#2e0804;--track:#223445;--tgt:#e8f0f8;--hd1:#072a5c;--hd2:#0a56b8;--shadow:0 1px 2px rgba(0,0,0,.4)}}
+:root[data-theme=dark]{--bg:#0a1522;--card:#12202f;--ink:#e8f0f8;--mute:#9bb0c4;--line:#223445;--acc:#4a9bff;--acc-ink:#04101f;--g:#4aa56a;--a:#c9a04a;--r:#c9685f;--gt:#04180b;--at:#2b1d00;--rt:#2e0804;--track:#223445;--tgt:#e8f0f8;--hd1:#072a5c;--hd2:#0a56b8;--shadow:0 1px 2px rgba(0,0,0,.4)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:78px}
 h1,h2,h3{margin:0}h3{font-weight:700}
@@ -29,7 +31,9 @@ main{max-width:880px;margin:0 auto;padding:16px}
 .btn:hover{filter:brightness(1.07)}
 .btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
 .btn.sm{padding:6px 12px;font-size:13px}
-.btn.danger{background:var(--r);color:#fff}
+.btn.danger{background:#d93f33;color:#fff}
+#theme{padding:7px 9px;order:10;display:flex;align-items:center;gap:6px;font-weight:600}#theme svg{width:19px;height:19px}#theme span{display:none}
+@media (min-width:768px){#theme span{display:inline}#theme{padding:7px 12px}}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;margin-bottom:10px}
 .chip{display:flex;align-items:center;gap:7px;border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:5px 14px 5px 5px;cursor:pointer;white-space:nowrap;font-weight:600;box-shadow:var(--shadow)}
 .chip.on{border-color:var(--acc);background:var(--acc);color:var(--acc-ink)}
@@ -40,7 +44,7 @@ main{max-width:880px;margin:0 auto;padding:16px}
 .bar.a>i{background:var(--a)}.bar.r>i{background:var(--r)}
 .bar .mk{position:absolute;top:0;bottom:0;width:2px;background:var(--tgt);opacity:.5}
 .nut{margin:10px 0}.nut .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
-.tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;color:#fff;background:var(--g)}.tag.a{background:var(--a);color:#3a2700}.tag.r{background:var(--r)}
+.tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;color:var(--gt);background:var(--g)}.tag.a{background:var(--a);color:var(--at)}.tag.r{background:var(--r);color:var(--rt)}
 .seg{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:10px;background:var(--card)}
 .seg button{flex:1;border:0;background:transparent;padding:9px 2px;cursor:pointer;font-size:13px;font-weight:600}.seg button.on{background:var(--acc);color:var(--acc-ink)}
 .item{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line)}.item:first-child{border-top:0}
@@ -100,6 +104,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13px}table.t td{padding:5p
   </div>
   <select id="me" style="width:auto" title="Who is using this phone?"></select>
   <nav id="nav"></nav>
+  <button id="theme" class="btn ghost sm" data-act="theme" title="Switch light / dark"></button>
 </header>
 <main id="main"></main>
 <dialog id="dlg"></dialog>
@@ -597,10 +602,21 @@ async function stepLog(id,d){
 }
 async function delLog(id){try{await db.remove('ffl_logs',id);S.logs=S.logs.filter(l=>l.id!==id);refreshToday()}catch(err){fail(err)}}
 
+const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t==='dark':matchMedia('(prefers-color-scheme:dark)').matches};
+function paintTheme(){
+  const d=isDark(),b=$('#theme');
+  b.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d?'<circle cx="12" cy="12" r="4"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>':'<path d="M20 14.2A8 8 0 1 1 9.8 4a6.4 6.4 0 0 0 10.2 10.2z"/>'}</svg><span>${d?'Light':'Dark'}</span>`;
+  b.title=b.ariaLabel=d?'Switch to light mode':'Switch to dark mode';
+}
+function toggleTheme(){const n=isDark()?'light':'dark';document.documentElement.dataset.theme=n;ls.set('ffl_theme',n);paintTheme();render()}
+matchMedia('(prefers-color-scheme:dark)').addEventListener?.('change',()=>{paintTheme();render()});
+paintTheme();
+
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id;
-  if(a==='tab'){S.tab=el.dataset.t;ls.set('ffl_tab',S.tab);render()}
+  if(a==='theme')toggleTheme();
+  else if(a==='tab'){S.tab=el.dataset.t;ls.set('ffl_tab',S.tab);render()}
   else if(a==='member'){S.cur=id;ls.set('ffl_cur',id);render()}
   else if(a==='go'){S.cur=id;ls.set('ffl_cur',id);S.tab='today';render()}
   else if(a==='meal'){S.meal=el.dataset.m;paintMeal();if(el.classList.contains('mh'))$('#meals').scrollIntoView({block:'center',behavior:'smooth'})}
