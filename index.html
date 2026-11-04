@@ -464,9 +464,9 @@ function nutDetail(k){
   $('#dlg').showModal();
 }
 function htotals(mid,day){
-  const t={sat_fat:0,chol:0,sodium:0,addsugar:0,unrated:0,flagged:[]},seen=new Set();
+  const t={sat_fat:0,chol:0,sodium:0,addsugar:0,unrated:0,unratedFoods:[],flagged:[]},seen=new Set();
   for(const l of logsFor(mid,day)){const f=food(l.food_id);if(!f)continue;const h=hf(f),s=+l.servings;
-    if(!h.rated){t.unrated++;continue}
+    if(!h.rated){if(!t.unratedFoods.some(x=>x.id===f.id)){t.unratedFoods.push(f);t.unrated++}continue}
     t.sat_fat+=h.sat*s;t.chol+=h.chol*s;t.sodium+=h.na*s;if(h.tags.includes('as'))t.addsugar+=h.sugar*s;
     const R=flagsOf(f);if((R.heart.length||R.bp.length||R.sugar.length)&&!seen.has(f.id)){seen.add(f.id);t.flagged.push(f)}}
   return t;
@@ -480,7 +480,7 @@ function healthCard(m,t){
   return `<div class="sect"><h3 style="font-size:15px">Heart, blood pressure &amp; sugar watch</h3>
   <div class="small mute" style="margin:2px 0 6px">Daily limits for ${esc(m.name)}. Tap a row to see which foods added to it.</div>${hBars(ht,lim)}
   ${ht.flagged.length?`<div class="small mute" style="margin-top:8px">Foods to watch today (tap an icon to see why):</div><div class="wl">${ht.flagged.map(f=>`<span class="wchip">${vmark(f)}${esc(f.name.split(' (')[0])}${flagIcons(f)}</span>`).join('')}</div>`:''}
-  ${ht.unrated?`<div class="small mute" style="margin-top:6px">${ht.unrated} logged food${ht.unrated>1?'s have':' has'} no salt, cholesterol or sugar data yet (edit it in the Foods tab).</div>`:''}</div>`;
+  ${ht.unrated?`<div class="small mute" style="margin-top:8px">${ht.unrated} logged food${ht.unrated>1?'s have':' has'} no salt, cholesterol or sugar data yet, so ${ht.unrated>1?'they are':'it is'} not counted above: ${ht.unratedFoods.map(f=>`<a href="#" data-act="editFood" data-id="${f.id}" style="color:var(--acc);font-weight:700">${esc(f.name)}</a>`).join(', ')}. Tap a name to fill in the values.</div>`:''}</div>`;
 }
 function whyFood(id){
   const f=food(id);if(!f)return;const h=hf(f),R=flagsOf(f);
@@ -647,7 +647,7 @@ function viewFoods(){
 }
 function renderFoodList(){
   const q=(S.fq||'').toLowerCase();
-  $('#foodlist').innerHTML=S.foods.filter(f=>dietOk(f,S.diet||'all')&&f.name.toLowerCase().includes(q)).map(f=>`<div class="item" data-act="editFood" data-id="${f.id}" style="cursor:pointer"><div class="sp"><div>${foodName(f)}</div><div class="small mute">${esc(f.serving)}</div></div><div class="small mute" style="text-align:right">${num(f.kcal)} kcal<br>${r1(f.protein)} g prot · ${r1(f.fibre)} g fibre</div></div>`).join('')||'<div class="mute">No foods.</div>';
+  $('#foodlist').innerHTML=S.foods.filter(f=>dietOk(f,S.diet||'all')&&f.name.toLowerCase().includes(q)).map(f=>`<div class="item" data-act="editFood" data-id="${f.id}" style="cursor:pointer"><div class="sp"><div>${foodName(f)}${hf(f).rated?'':' <span class="tag" style="background:var(--track);color:var(--mute)">no salt / sugar data</span>'}</div><div class="small mute">${esc(f.serving)}</div></div><div class="small mute" style="text-align:right">${num(f.kcal)} kcal<br>${r1(f.protein)} g prot · ${r1(f.fibre)} g fibre</div></div>`).join('')||'<div class="mute">No foods.</div>';
 }
 
 function viewPeople(){
@@ -753,6 +753,7 @@ paintTheme();
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id;
+  if(el.tagName==='A')e.preventDefault();
   if(a==='theme')toggleTheme();
   else if(a==='nut')nutDetail(el.dataset.k);
   else if(a==='why'){e.stopPropagation();whyFood(id)}
